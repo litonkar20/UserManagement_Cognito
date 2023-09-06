@@ -22,48 +22,55 @@ export class AuthController {
     }
   }
 
-  @Post('authenticate')
-  async authenticate(@Body() authenticateRequest: AuthenticateRequestDto) {
+  @Post('verify-otp')
+  async verifyOTP(@Body() confirmRegistrationDto: ConfirmRegistrationDto) {
     try {
-      return await this.authService.authenticate(authenticateRequest);
+      return await this.authService.verifyOTP(confirmRegistrationDto);
     } catch (e) {
       throw new BadRequestException(e.message);
     }
   }
 
-  @Post('confirm')
-  async confirmRegistration(
-    @Body() confirmRegistrationDto: ConfirmRegistrationDto,
-  ) {
+  @Post('resend-otp')
+  async resendOTP(@Body() registerRequest: RegisterRequestDto) {
     try {
-      return await this.authService.confirmRegistration(confirmRegistrationDto);
+      return await this.authService.resendOTP(registerRequest);
     } catch (e) {
       throw new BadRequestException(e.message);
     }
   }
 
-  @Post('reset')
-  async resetPassword(@Body() registerRequest: RegisterRequestDto) {
+  @Post('set-mpin')
+  async setMpin(@Body() authenticateRequest: AuthenticateRequestDto) {
     try {
-      return await this.authService.resetPassword(registerRequest);
+      return await this.authService.setMpin(authenticateRequest);
     } catch (e) {
       throw new BadRequestException(e.message);
     }
   }
 
-  @Post('setNewpassword')
-  async setNewpassword(@Body() registerRequest: ConfirmPasswordDto) {
+  @Post('login')
+  async login(@Body() authenticateRequest: AuthenticateRequestDto) {
     try {
-      return await this.authService.setNewpassword(registerRequest);
+      return await this.authService.login(authenticateRequest);
     } catch (e) {
       throw new BadRequestException(e.message);
     }
   }
 
-  @Post('changePassword')
-  async changePassword(@Body() authenticateRequest: AuthenticateRequestDto) {
+  @Post('reset/mpin-otp')
+  async sendResetMpinOTP(@Body() registerRequest: RegisterRequestDto) {
     try {
-      return await this.authService.changePassword(authenticateRequest);
+      return await this.authService.sendResetMpinOTP(registerRequest);
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
+  }
+
+  @Post('reset/mpin')
+  async resetMpin(@Body() registerRequest: ConfirmPasswordDto) {
+    try {
+      return await this.authService.resetMpin(registerRequest);
     } catch (e) {
       throw new BadRequestException(e.message);
     }

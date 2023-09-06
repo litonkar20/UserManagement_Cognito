@@ -45,7 +45,7 @@ export class AuthService {
     });
   }
 
-  async confirmRegistration(confirmRegistrationDto: ConfirmRegistrationDto) {
+  async verifyOTP(confirmRegistrationDto: ConfirmRegistrationDto) {
     const { phone_number, otp } = confirmRegistrationDto;
     const userData = {
       Username: phone_number,
@@ -62,13 +62,8 @@ export class AuthService {
             Password: phone_number,
           });
           userCognito.authenticateUser(authenticationDetails, {
-            onSuccess: (result) => {
-              resolve({
-                userId: result.getAccessToken().payload.sub,
-                accessToken: result.getAccessToken().getJwtToken(),
-                refreshToken: result.getRefreshToken().getToken(),
-              });
-              resolve(result);
+            onSuccess: () => {
+              resolve('SUCCESS');
             },
             onFailure: (err) => {
               reject(err);
@@ -79,7 +74,58 @@ export class AuthService {
     });
   }
 
-  async authenticate(authenticateRequestDto: AuthenticateRequestDto) {
+  async resendOTP(registerRequest: RegisterRequestDto) {
+    const { phone_number } = registerRequest;
+    const userData = {
+      Username: phone_number,
+      Pool: this.userPool,
+    };
+    const userCognito = new CognitoUser(userData);
+    return new Promise((resolve, reject) => {
+      return userCognito.resendConfirmationCode(function (err, result) {
+        if (err) {
+          reject(err);
+        }
+        resolve(result);
+      });
+    });
+  }
+
+  async setMpin(authenticateRequestDto: AuthenticateRequestDto) {
+    const { phone_number, mpin } = authenticateRequestDto;
+    const authenticationDetails = new AuthenticationDetails({
+      Username: phone_number,
+      Password: phone_number,
+    });
+    const userData = {
+      Username: phone_number,
+      Pool: this.userPool,
+    };
+    const userCognito = new CognitoUser(userData);
+    return new Promise((resolve, reject) => {
+      return userCognito.authenticateUser(authenticationDetails, {
+        onSuccess: (result) => {
+          userCognito.changePassword(phone_number, mpin, (err, res) => {
+            if (err) {
+              reject(err);
+              return;
+            } else {
+              resolve({
+                userId: result.getAccessToken().payload.sub,
+                accessToken: result.getAccessToken().getJwtToken(),
+                refreshToken: result.getRefreshToken().getToken(),
+              });
+            }
+          });
+        },
+        onFailure: (err) => {
+          reject(err);
+        },
+      });
+    });
+  }
+
+  async login(authenticateRequestDto: AuthenticateRequestDto) {
     const { phone_number, mpin } = authenticateRequestDto;
     const authenticationDetails = new AuthenticationDetails({
       Username: phone_number,
@@ -107,36 +153,7 @@ export class AuthService {
     });
   }
 
-  async changePassword(authenticateRequestDto: AuthenticateRequestDto) {
-    const { phone_number, mpin } = authenticateRequestDto;
-    const authenticationDetails = new AuthenticationDetails({
-      Username: phone_number,
-      Password: phone_number,
-    });
-    const userData = {
-      Username: phone_number,
-      Pool: this.userPool,
-    };
-    const userCognito = new CognitoUser(userData);
-    return new Promise((resolve, reject) => {
-      return userCognito.authenticateUser(authenticationDetails, {
-        onSuccess: () => {
-          userCognito.changePassword(phone_number, mpin, (err, result) => {
-            if (err) {
-              reject(err);
-              return;
-            }
-            resolve(result);
-          });
-        },
-        onFailure: (err) => {
-          reject(err);
-        },
-      });
-    });
-  }
-
-  async resetPassword(registerRequestDto: RegisterRequestDto) {
+  async sendResetMpinOTP(registerRequestDto: RegisterRequestDto) {
     const { phone_number } = registerRequestDto;
     const userData = {
       Username: phone_number,
@@ -155,7 +172,7 @@ export class AuthService {
     });
   }
 
-  async setNewpassword(confirmPasswordDto: ConfirmPasswordDto) {
+  async resetMpin(confirmPasswordDto: ConfirmPasswordDto) {
     const { phone_number, otp, mpin } = confirmPasswordDto;
     const userData = {
       Username: phone_number,
