@@ -1,1 +1,1 @@
-## Nestjs AWS Cognito example
+## Nestjs AWS Cognito OTP based user authentication
